@@ -179,7 +179,7 @@ async def report_message(interaction: discord.Interaction, message: discord.Mess
 
     # Handle report by sending it into a log channel
     quotes_channel = interaction.guild.get_channel(1014653882917466192)  # replace with your channel id
-    embed = discord.Embed(title=f'Quoted by {interaction.user}')
+    embed = discord.Embed(footer=f'Quoted by {interaction.user}')
     if message.content:
         embed.description = message.content
 
