@@ -179,13 +179,14 @@ async def report_message(interaction: discord.Interaction, message: discord.Mess
 
     # Handle report by sending it into a log channel
     quotes_channel = interaction.guild.get_channel(1014653882917466192)  # replace with your channel id
-    embed = discord.Embed(footer=f'Quoted by {interaction.user}')
+    embed = discord.Embed()
     if message.content:
         embed.description = message.content
 
     embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
     embed.timestamp = message.created_at
-
+    footer=f'Quoted by {interaction.user}'
+    embed.set_footer(text=footer)
     url_view = discord.ui.View()
     url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
 
