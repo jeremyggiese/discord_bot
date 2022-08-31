@@ -129,7 +129,7 @@ async def announce(interaction: discord.Interaction, value:str):
     # Handle report by sending it into a log channel
     announce_channel = interaction.guild.get_channel(1014612266626330644)  # replace with your channel id
     
-    embed = discord.Embed(title=f'Announcement from {member}')
+    embed = discord.Embed(title=f'Announcement from {member.mention}')
     embed.description = value
 
     await announce_channel.send(embed=embed)
