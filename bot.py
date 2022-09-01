@@ -48,14 +48,14 @@ async def on_member_join(member):
     if guild.system_channel is not None:
         to_send = f'Welcome @{member.display_name} to {guild.name}! Try using the /introduce command to write an introduction.'
         await guild.system_channel.send(to_send,allowed_mentions=allowed_mentions)
-if(EDIT_CHANNEL_ID):
+if(EDIT_CHANNEL_ID is not None):
     @client.event
     async def on_message_edit(before, after):
             allowed_mentions=AllowedMentions.none()
             msg = f'**{before.author}** edited their message:\n{before.content} -> {after.content}\n in {before.channel.mention}'
             edit_channel=discord.utils.get(client.get_all_channels(), id=int(EDIT_CHANNEL_ID))
             await edit_channel.send(msg, allowed_mentions=allowed_mentions)
-if(DELETED_CHANNEL_ID):
+if(DELETED_CHANNEL_ID is not None):
     @client.event
     async def on_message_delete(message):
             if(message.author!=client.user):
