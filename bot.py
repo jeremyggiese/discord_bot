@@ -45,9 +45,10 @@ async def on_message_edit(before, after):
         await edit_channel.send(msg)
 @client.event
 async def on_message_delete(message):
-        msg = f'**{message.author}** deleted their message:\n"{message.content}" in {message.channel.mention}'
-        delete_channel=discord.utils.get(client.get_all_channels(), id=1014705960499028019)
-        await delete_channel.send(msg)
+        if(message.author!=client.user):
+            msg = f'**{message.author}** deleted their message:\n"{message.content}" in {message.channel.mention}'
+            delete_channel=discord.utils.get(client.get_all_channels(), id=1014705960499028019)
+            await delete_channel.send(msg)
 
 
 # Other transformers include regular type hints that are supported by Discord
