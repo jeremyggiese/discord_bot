@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 import discord
 from discord import app_commands
+from discord import AllowedMentions
 from typing import Optional
 load_dotenv()
 TOKEN=os.getenv('DISCORD_TOKEN')
@@ -43,22 +44,25 @@ async def on_ready():
 @client.event
 async def on_member_join(member):
     guild = member.guild
+    allowed_mentions=AllowedMentions.none()
     if guild.system_channel is not None:
-        to_send = f'Welcome {member.mention} to {guild.name}! Try using the /introduce command to write an introduction.'
-        await guild.system_channel.send(to_send)
+        to_send = f'Welcome @{member.display_name} to {guild.name}! Try using the /introduce command to write an introduction.'
+        await guild.system_channel.send(to_send,allowed_mentions=allowed_mentions)
 if(EDIT_CHANNEL_ID):
     @client.event
     async def on_message_edit(before, after):
+            allowed_mentions=AllowedMentions.none()
             msg = f'**{before.author}** edited their message:\n{before.content} -> {after.content}\n in {before.channel.mention}'
             edit_channel=discord.utils.get(client.get_all_channels(), id=int(EDIT_CHANNEL_ID))
-            await edit_channel.send(msg)
+            await edit_channel.send(msg, allowed_mentions=allowed_mentions)
 if(DELETED_CHANNEL_ID):
     @client.event
     async def on_message_delete(message):
             if(message.author!=client.user):
-                msg = f'**{message.author}** deleted their message:\n"{message.content}" in {message.channel.mention}'
+                allowed_mentions=AllowedMentions.none()
+                msg = f'**@{message.author.display_name}** deleted their message:\n"{message.content}" in {message.channel.mention}'
                 delete_channel=discord.utils.get(client.get_all_channels(), id=int(DELETED_CHANNEL_ID))
-                await delete_channel.send(msg)
+                await delete_channel.send(msg, allowed_mentions=allowed_mentions)
 
 
 # Other transformers include regular type hints that are supported by Discord
@@ -126,16 +130,16 @@ if(DEBATE_CHANNEL_ID is not None):
     @client.tree.command()
     @app_commands.describe(member='The member you want to debate', topic='What is the topic of the debate?')
     async def debate(interaction: discord.Interaction, topic:str, member: Optional[discord.Member] = None):
-        
+        allowed_mentions=AllowedMentions.none()
         # If no member is explicitly provided then we use the command user here
         if(member):
-            response=f'{interaction.user.display_name} would like to debate with {member.mention} surrounding the following\n\n{topic}'
+            response=f'@{interaction.user.display_name} would like to debate with @{member.display_name} surrounding the following\n\n{topic}'
         else:
         # The format_dt function formats the date time into a human readable representation in the official client
-            response=(f'{interaction.user.display_name} would like to debate the following\n{topic}')
+            response=(f'@{interaction.user.display_name} would like to debate the following\n{topic}')
         debate_channel = interaction.guild.get_channel(int(DEBATE_CHANNEL_ID))  # replace with your channel id
         await interaction.response.send_message(f'Debate communicated in {debate_channel.mention}', ephemeral=True)
-        await debate_channel.send(response)
+        await debate_channel.send(response, allowed_mentions=allowed_mentions)
     
 
 
@@ -147,7 +151,7 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
     """Says when a member joined."""
     # If no member is explicitly provided then we use the command user here
     member = member or interaction.user
-
+    
     # The format_dt function formats the date time into a human readable representation in the official client
     await interaction.response.send_message(f'{member} joined {discord.utils.format_dt(member.joined_at)}')
 if(ANNOUNCE_CHANNEL_ID is not None):
@@ -155,6 +159,7 @@ if(ANNOUNCE_CHANNEL_ID is not None):
     @client.tree.command()
     async def announce(interaction: discord.Interaction, value:str):
         # We're sending this response message with ephemeral=True, so only the command executor can see it
+        allowed_mentions=AllowedMentions.none()
         await interaction.response.send_message(
             f'Announcing {value}', ephemeral=True
         )
@@ -162,21 +167,24 @@ if(ANNOUNCE_CHANNEL_ID is not None):
         # Handle report by sending it into a log channel
         announce_channel = interaction.guild.get_channel(int(ANNOUNCE_CHANNEL_ID))  # replace with your channel id
         
-        value=f'Announcement from {member.mention}\n\n'+value
+        value=f'Announcement from @{member.display_name}\n\n'+value
     
 
-        await announce_channel.send(value)
+        await announce_channel.send(value, allowed_mentions=allowed_mentions)
 
 if(INTRODUCE_CHANNEL_ID is not None):
     @client.tree.command()
-    async def introduce(interaction: discord.Interaction, value:str):
+    async def introduce(interaction: discord.Interaction, value:str, member: Optional[discord.Member] = None):
         # We're sending this response message with ephemeral=True, so only the command executor can see it
+        allowed_mentions=AllowedMentions.none()
+        #member=interaction.user
+        introduction_channel = interaction.guild.get_channel(int(INTRODUCE_CHANNEL_ID))  # replace with your channel id
+        embed = discord.Embed() 
+        if(member is not None):
+            value=f'Introducing @{member.display_name}\n'+value
         await interaction.response.send_message(
             f'Introduction is:\n {value}', ephemeral=True
         )
-        #member=interaction.user
-        introduction_channel = interaction.guild.get_channel(int(INTRODUCE_CHANNEL_ID))  # replace with your channel id
-        embed = discord.Embed()
         embed.description = value
         embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
         #embed.timestamp = 
@@ -184,8 +192,8 @@ if(INTRODUCE_CHANNEL_ID is not None):
         #embed.set_footer(text=footer)
         url_view = discord.ui.View()
         #url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
-
-        await introduction_channel.send(embed=embed, view=url_view)
+       
+        await introduction_channel.send(embed=embed, view=url_view, allowed_mentions=allowed_mentions)
         # Handle report by sending it into a log channel
   
 
