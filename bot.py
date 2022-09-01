@@ -109,7 +109,19 @@ async def request_advice(interaction: discord.Interaction, type:request_types, a
         await interaction.response.send_message(f'Advice requested in {advice_channel.mention}', ephemeral=True)
         await advice_channel.send(f'{type.name.replace("_", " ").capitalize()} \n\n{member} says:\n\"{value}\"')
 
-       
+# To make an argument optional, you can either give it a supported default argument
+# or you can mark it as Optional from the typing standard library. This example does both.
+@client.tree.command()
+@app_commands.debate(member='The member you want to debate', topic='What is the topic of the debate?')
+async def joined(interaction: discord.Interaction, topic:str, member: Optional[discord.Member] = None):
+    """Says when a member joined."""
+    # If no member is explicitly provided then we use the command user here
+    if(member):
+        await interaction.response.send_message(f'{interaction.author} would like to debate {member} surrounding the following\n{topic}')
+    else:
+    # The format_dt function formats the date time into a human readable representation in the official client
+        await interaction.response.send_message(f'{interaction.author} would like to debate the following\n{topic}')
+   
 
 
 # To make an argument optional, you can either give it a supported default argument
