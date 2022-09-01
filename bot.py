@@ -117,10 +117,10 @@ async def debate(interaction: discord.Interaction, topic:str, member: Optional[d
     
     # If no member is explicitly provided then we use the command user here
     if(member):
-        await interaction.response.send_message(f'{interaction.user} would like to debate with {member.mention} surrounding the following\n\n{topic}')
+        await interaction.response.send_message(f'{interaction.user.display_name} would like to debate with {member.mention} surrounding the following\n\n{topic}')
     else:
     # The format_dt function formats the date time into a human readable representation in the official client
-        await interaction.response.send_message(f'{interaction.user} would like to debate the following\n{topic}')
+        await interaction.response.send_message(f'{interaction.user.display_name} would like to debate the following\n{topic}')
    
 
 
