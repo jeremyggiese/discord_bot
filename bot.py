@@ -11,7 +11,14 @@ load_dotenv()
 TOKEN=os.getenv('DISCORD_TOKEN')
 GUILD_ID=os.getenv('DISCORD_GUILD_ID')
 MY_GUILD = discord.Object(GUILD_ID)  # replace with your guild id
-
+EDIT_CHANNEL_ID=os.getenv('EDIT_CHANNEL_ID')
+DELETED_CHANNEL_ID=os.getenv('DELETED_CHANNEL_ID')
+ADVICE_CHANNEL_ID=os.getenv('ADVICE_CHANNEL_ID')
+DEBATE_CHANNEL_ID=os.getenv('DEBATE_CHANNEL_ID')
+ANNOUNCE_CHANNEL_ID=os.getenv('ANNOUNCE_CHANNEL_ID')
+INTRODUCE_CHANNEL_ID=os.getenv('INTRODUCE_CHANNEL_ID')
+REPORT_CHANNEL_ID=os.getenv('REPORT_CHANNEL_ID')
+QUOTES_CHANNEL_ID=os.getenv('QUOTES_CHANNEL_ID')
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -38,17 +45,19 @@ async def on_member_join(member):
     if guild.system_channel is not None:
         to_send = f'Welcome {member.mention} to {guild.name}! Try using the /introduce command to write an introduction.'
         await guild.system_channel.send(to_send)
-@client.event
-async def on_message_edit(before, after):
-        msg = f'**{before.author}** edited their message:\n{before.content} -> {after.content}\n in {before.channel.mention}'
-        edit_channel=discord.utils.get(client.get_all_channels(), id=1014625749824716810)
-        await edit_channel.send(msg)
-@client.event
-async def on_message_delete(message):
-        if(message.author!=client.user):
-            msg = f'**{message.author}** deleted their message:\n"{message.content}" in {message.channel.mention}'
-            delete_channel=discord.utils.get(client.get_all_channels(), id=1014705960499028019)
-            await delete_channel.send(msg)
+if(EDIT_CHANNEL_ID):
+    @client.event
+    async def on_message_edit(before, after):
+            msg = f'**{before.author}** edited their message:\n{before.content} -> {after.content}\n in {before.channel.mention}'
+            edit_channel=discord.utils.get(client.get_all_channels(), int(EDIT_CHANNEL_ID))
+            await edit_channel.send(msg)
+if(DELETED_CHANNEL_ID):
+    @client.event
+    async def on_message_delete(message):
+            if(message.author!=client.user):
+                msg = f'**{message.author}** deleted their message:\n"{message.content}" in {message.channel.mention}'
+                delete_channel=discord.utils.get(client.get_all_channels(), int(DELETED_CHANNEL_ID))
+                await delete_channel.send(msg)
 
 
 # Other transformers include regular type hints that are supported by Discord
@@ -57,6 +66,7 @@ async def on_message_delete(message):
 
 # This command shows how to only show text and voice channels to a user using the Union type hint
 # combined with the VoiceChannel and TextChannel types.
+
 @client.tree.command(name='channel-info')
 @app_commands.describe(channel='The channel to get info of')
 async def channel_info(interaction: discord.Interaction, channel: Union[discord.VoiceChannel, discord.TextChannel]):
@@ -85,45 +95,46 @@ async def channel_info(interaction: discord.Interaction, channel: Union[discord.
 async def shop(interaction: discord.Interaction, action: Literal['Buy', 'Sell'], item: str):
     "Interact with the shop"
     await interaction.response.send_message(f'Action: {action}\nItem: {item}') """
+if(ADVICE_CHANNEL_ID is not None):
+    class request_types(Enum):
+        do_not_interact=0
+        request_advice=1
+        dm_advice=2
+    class anon(Enum):
+        with_name=0
+        anonymous=1
 
-class request_types(Enum):
-    do_not_interact=0
-    request_advice=1
-    dm_advice=2
-class anon(Enum):
-    with_name=0
-    anonymous=1
+    @client.tree.command()
+    @app_commands.describe(type='What type of advice is needed?')
+    async def request_advice(interaction: discord.Interaction, type:request_types, anon:anon, value:str):
+        if(type.value==0):
+            value="||"+value+"||"
+        if(anon.value==1 and type.value>0):
+            await interaction.response.send_message(f'Illegal options', ephemeral=True)
+        else:
+            if(anon.value==0):
+                member=interaction.user
+            advice_channel=interaction.guild.get_channel(int(ADVICE_CHANNEL_ID))
 
-@client.tree.command()
-@app_commands.describe(type='What type of advice is needed?')
-async def request_advice(interaction: discord.Interaction, type:request_types, anon:anon, value:str):
-    if(type.value==0):
-        value="||"+value+"||"
-    if(anon.value==1 and type.value>0):
-        await interaction.response.send_message(f'Illegal options', ephemeral=True)
-    else:
-        if(anon.value==0):
-            member=interaction.user
-        advice_channel=interaction.guild.get_channel(1014618459155476510)
-
-        await interaction.response.send_message(f'Advice requested in {advice_channel.mention}', ephemeral=True)
-        await advice_channel.send(f'{type.name.replace("_", " ").capitalize()} \n\n{member} says:\n\"{value}\"')
+            await interaction.response.send_message(f'Advice requested in {advice_channel.mention}', ephemeral=True)
+            await advice_channel.send(f'{type.name.replace("_", " ").capitalize()} \n\n{member} says:\n\"{value}\"')
 
 # To make an argument optional, you can either give it a supported default argument
 # or you can mark it as Optional from the typing standard library. This example does both.
-@client.tree.command()
-@app_commands.describe(member='The member you want to debate', topic='What is the topic of the debate?')
-async def debate(interaction: discord.Interaction, topic:str, member: Optional[discord.Member] = None):
-    
-    # If no member is explicitly provided then we use the command user here
-    if(member):
-        response=f'{interaction.user.display_name} would like to debate with {member.mention} surrounding the following\n\n{topic}'
-    else:
-    # The format_dt function formats the date time into a human readable representation in the official client
-       response=(f'{interaction.user.display_name} would like to debate the following\n{topic}')
-    debate_channel = interaction.guild.get_channel(1014616311571153047)  # replace with your channel id
-    await interaction.response.send_message(f'Debate communicated in {debate_channel.mention}', ephemeral=True)
-    await debate_channel.send(response)
+if(DEBATE_CHANNEL_ID is not None):
+    @client.tree.command()
+    @app_commands.describe(member='The member you want to debate', topic='What is the topic of the debate?')
+    async def debate(interaction: discord.Interaction, topic:str, member: Optional[discord.Member] = None):
+        
+        # If no member is explicitly provided then we use the command user here
+        if(member):
+            response=f'{interaction.user.display_name} would like to debate with {member.mention} surrounding the following\n\n{topic}'
+        else:
+        # The format_dt function formats the date time into a human readable representation in the official client
+            response=(f'{interaction.user.display_name} would like to debate the following\n{topic}')
+        debate_channel = interaction.guild.get_channel(int(DEBATE_CHANNEL_ID))  # replace with your channel id
+        await interaction.response.send_message(f'Debate communicated in {debate_channel.mention}', ephemeral=True)
+        await debate_channel.send(response)
     
 
 
@@ -138,43 +149,43 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
 
     # The format_dt function formats the date time into a human readable representation in the official client
     await interaction.response.send_message(f'{member} joined {discord.utils.format_dt(member.joined_at)}')
-
-# This context menu command only works on messages
-@client.tree.command()
-async def announce(interaction: discord.Interaction, value:str):
-    # We're sending this response message with ephemeral=True, so only the command executor can see it
-    await interaction.response.send_message(
-        f'Announcing {value}', ephemeral=True
-    )
-    member=interaction.user
-    # Handle report by sending it into a log channel
-    announce_channel = interaction.guild.get_channel(1014612266626330644)  # replace with your channel id
+if(ANNOUNCE_CHANNEL_ID is not None):
+    # This context menu command only works on messages
+    @client.tree.command()
+    async def announce(interaction: discord.Interaction, value:str):
+        # We're sending this response message with ephemeral=True, so only the command executor can see it
+        await interaction.response.send_message(
+            f'Announcing {value}', ephemeral=True
+        )
+        member=interaction.user
+        # Handle report by sending it into a log channel
+        announce_channel = interaction.guild.get_channel(int(ANNOUNCE_CHANNEL_ID))  # replace with your channel id
+        
+        value=f'Announcement from {member.mention}\n'+value
     
-    value=f'Announcement from {member.mention}\n'+value
-   
 
-    await announce_channel.send(value)
+        await announce_channel.send(value)
 
+if(INTRODUCE_CHANNEL_ID is not None):
+    @client.tree.command()
+    async def introduce(interaction: discord.Interaction, value:str):
+        # We're sending this response message with ephemeral=True, so only the command executor can see it
+        await interaction.response.send_message(
+            f'Introduction is:\n {value}', ephemeral=True
+        )
+        #member=interaction.user
+        introduction_channel = interaction.guild.get_channel(int(INTRODUCE_CHANNEL_ID))  # replace with your channel id
+        embed = discord.Embed()
+        embed.description = value
+        embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
+        #embed.timestamp = 
+        #footer=f'Quoted by {interaction.user}'
+        #embed.set_footer(text=footer)
+        url_view = discord.ui.View()
+        #url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
 
-@client.tree.command()
-async def introduce(interaction: discord.Interaction, value:str):
-    # We're sending this response message with ephemeral=True, so only the command executor can see it
-    await interaction.response.send_message(
-        f'Introduction is:\n {value}', ephemeral=True
-    )
-    #member=interaction.user
-    introduction_channel = interaction.guild.get_channel(1014639228178665602)  # replace with your channel id
-    embed = discord.Embed()
-    embed.description = value
-    embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.display_avatar.url)
-    #embed.timestamp = 
-    #footer=f'Quoted by {interaction.user}'
-    #embed.set_footer(text=footer)
-    url_view = discord.ui.View()
-    #url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
-
-    await introduction_channel.send(embed=embed, view=url_view)
-    # Handle report by sending it into a log channel
+        await introduction_channel.send(embed=embed, view=url_view)
+        # Handle report by sending it into a log channel
   
 
 
@@ -188,52 +199,52 @@ async def show_join_date(interaction: discord.Interaction, member: discord.Membe
     # The format_dt function formats the date time into a human readable representation in the official client
     await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
 
+if(REPORT_CHANNEL_ID is not None):
+    # This context menu command only works on messages
+    @client.tree.context_menu(name='Report to Moderators')
+    async def report_message(interaction: discord.Interaction, message: discord.Message):
+        # We're sending this response message with ephemeral=True, so only the command executor can see it
+        await interaction.response.send_message(
+            f'Thanks for reporting this message by {message.author.mention} to our moderators.', ephemeral=True
+        )
 
-# This context menu command only works on messages
-@client.tree.context_menu(name='Report to Moderators')
-async def report_message(interaction: discord.Interaction, message: discord.Message):
-    # We're sending this response message with ephemeral=True, so only the command executor can see it
-    await interaction.response.send_message(
-        f'Thanks for reporting this message by {message.author.mention} to our moderators.', ephemeral=True
-    )
+        # Handle report by sending it into a log channel
+        log_channel = interaction.guild.get_channel(int(REPORT_CHANNEL_ID))  # replace with your channel id
 
-    # Handle report by sending it into a log channel
-    log_channel = interaction.guild.get_channel(1014614567277568010)  # replace with your channel id
+        embed = discord.Embed(title='Reported Message')
+        if message.content:
+            embed.description = message.content
 
-    embed = discord.Embed(title='Reported Message')
-    if message.content:
-        embed.description = message.content
+        embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
+        embed.timestamp = message.created_at
 
-    embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
-    embed.timestamp = message.created_at
+        url_view = discord.ui.View()
+        url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
 
-    url_view = discord.ui.View()
-    url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
+        await log_channel.send(embed=embed, view=url_view)
+if(QUOTES_CHANNEL_ID is not None):
+    # This context menu command only works on messages
+    @client.tree.context_menu(name='Quote')
+    async def report_message(interaction: discord.Interaction, message: discord.Message):
+        # We're sending this response message with ephemeral=True, so only the command executor can see it
+        await interaction.response.send_message(
+            f'This message by {message.author.mention} has been added to quotes', ephemeral=True
+        )
 
-    await log_channel.send(embed=embed, view=url_view)
+        # Handle report by sending it into a log channel
+        quotes_channel = interaction.guild.get_channel(int(QUOTES_CHANNEL_ID))  # replace with your channel id
+        embed = discord.Embed()
+        if message.content:
+            embed.description = f'>>> {message.content}'
 
-# This context menu command only works on messages
-@client.tree.context_menu(name='Quote')
-async def report_message(interaction: discord.Interaction, message: discord.Message):
-    # We're sending this response message with ephemeral=True, so only the command executor can see it
-    await interaction.response.send_message(
-        f'This message by {message.author.mention} has been added to quotes', ephemeral=True
-    )
+        embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
+        embed.timestamp = message.created_at
+        footer=f'Quoted by {interaction.user}'
+        embed.set_footer(text=footer)
+        url_view = discord.ui.View()
+        url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
 
-    # Handle report by sending it into a log channel
-    quotes_channel = interaction.guild.get_channel(1014653882917466192)  # replace with your channel id
-    embed = discord.Embed()
-    if message.content:
-        embed.description = f'>>> {message.content}'
-
-    embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
-    embed.timestamp = message.created_at
-    footer=f'Quoted by {interaction.user}'
-    embed.set_footer(text=footer)
-    url_view = discord.ui.View()
-    url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
-
-    await quotes_channel.send(embed=embed, view=url_view)
+        await quotes_channel.send(embed=embed, view=url_view)
 
 
 client.run(TOKEN)
