@@ -162,7 +162,7 @@ if(ANNOUNCE_CHANNEL_ID is not None):
         # Handle report by sending it into a log channel
         announce_channel = interaction.guild.get_channel(int(ANNOUNCE_CHANNEL_ID))  # replace with your channel id
         
-        value=f'Announcement from {member.mention}\n'+value
+        value=f'Announcement from {member.mention}\n\n'+value
     
 
         await announce_channel.send(value)
@@ -236,7 +236,8 @@ if(QUOTES_CHANNEL_ID is not None):
         quotes_channel = interaction.guild.get_channel(int(QUOTES_CHANNEL_ID))  # replace with your channel id
         embed = discord.Embed()
         if message.content:
-            embed.description = f'>>> {message.content}'
+            
+            embed.description = f'{message.channel.mention}\n>>> {message.content}'
 
         embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
         embed.timestamp = message.created_at
