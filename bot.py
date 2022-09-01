@@ -112,9 +112,9 @@ async def request_advice(interaction: discord.Interaction, type:request_types, a
 # To make an argument optional, you can either give it a supported default argument
 # or you can mark it as Optional from the typing standard library. This example does both.
 @client.tree.command()
-@app_commands.debate(member='The member you want to debate', topic='What is the topic of the debate?')
-async def joined(interaction: discord.Interaction, topic:str, member: Optional[discord.Member] = None):
-    """Says when a member joined."""
+@app_commands.describe(member='The member you want to debate', topic='What is the topic of the debate?')
+async def debate(interaction: discord.Interaction, topic:str, member: Optional[discord.Member] = None):
+    
     # If no member is explicitly provided then we use the command user here
     if(member):
         await interaction.response.send_message(f'{interaction.author} would like to debate {member} surrounding the following\n{topic}')
