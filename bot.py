@@ -117,11 +117,14 @@ async def debate(interaction: discord.Interaction, topic:str, member: Optional[d
     
     # If no member is explicitly provided then we use the command user here
     if(member):
-        await interaction.response.send_message(f'{interaction.user.display_name} would like to debate with {member.mention} surrounding the following\n\n{topic}')
+        response=f'{interaction.user.display_name} would like to debate with {member.mention} surrounding the following\n\n{topic}'
     else:
     # The format_dt function formats the date time into a human readable representation in the official client
-        await interaction.response.send_message(f'{interaction.user.display_name} would like to debate the following\n{topic}')
-   
+       response=(f'{interaction.user.display_name} would like to debate the following\n{topic}')
+    debate_channel = interaction.guild.get_channel(1014616311571153047)  # replace with your channel id
+    await interaction.response.send_message(f'Debate communicated in {debate_channel.mention}', ephemeral=True)
+    await debate_channel.send(response)
+    
 
 
 # To make an argument optional, you can either give it a supported default argument
