@@ -112,6 +112,7 @@ if(ADVICE_CHANNEL_ID is not None):
     @client.tree.command()
     @app_commands.describe(type='What type of advice is needed?')
     async def request_advice(interaction: discord.Interaction, type:request_types, anon:anon, value:str):
+        allowed_mentions=AllowedMentions.none()
         if(type.value==0):
             value="||"+value+"||"
         if(anon.value==1 and type.value>0):
@@ -122,7 +123,7 @@ if(ADVICE_CHANNEL_ID is not None):
             advice_channel=interaction.guild.get_channel(int(ADVICE_CHANNEL_ID))
 
             await interaction.response.send_message(f'Advice requested in {advice_channel.mention}', ephemeral=True)
-            await advice_channel.send(f'{type.name.replace("_", " ").capitalize()} \n\n{member} says:\n\"{value}\"')
+            await advice_channel.send(f'{type.name.replace("_", " ").capitalize()} \n\n@{member.display_name} says:\n\"{value}\"',allowed_mentions=allowed_mentions)
 
 # To make an argument optional, you can either give it a supported default argument
 # or you can mark it as Optional from the typing standard library. This example does both.
