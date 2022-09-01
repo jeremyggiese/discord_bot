@@ -221,7 +221,7 @@ async def report_message(interaction: discord.Interaction, message: discord.Mess
     quotes_channel = interaction.guild.get_channel(1014653882917466192)  # replace with your channel id
     embed = discord.Embed()
     if message.content:
-        embed.description = message.content
+        embed.description = f'>>>{message.content}'
 
     embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
     embed.timestamp = message.created_at
