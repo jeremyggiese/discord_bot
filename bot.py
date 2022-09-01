@@ -49,14 +49,14 @@ if(EDIT_CHANNEL_ID):
     @client.event
     async def on_message_edit(before, after):
             msg = f'**{before.author}** edited their message:\n{before.content} -> {after.content}\n in {before.channel.mention}'
-            edit_channel=discord.utils.get(client.get_all_channels(), int(EDIT_CHANNEL_ID))
+            edit_channel=discord.utils.get(client.get_all_channels(), channel_id=int(EDIT_CHANNEL_ID))
             await edit_channel.send(msg)
 if(DELETED_CHANNEL_ID):
     @client.event
     async def on_message_delete(message):
             if(message.author!=client.user):
                 msg = f'**{message.author}** deleted their message:\n"{message.content}" in {message.channel.mention}'
-                delete_channel=discord.utils.get(client.get_all_channels(), int(DELETED_CHANNEL_ID))
+                delete_channel=discord.utils.get(client.get_all_channels(), channel_id=int(DELETED_CHANNEL_ID))
                 await delete_channel.send(msg)
 
 
